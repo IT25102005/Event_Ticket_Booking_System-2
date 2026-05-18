@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Event Details</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/event-management.css">
+    <style>
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .header-title p {
+            font-size: 14px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-outline {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-outline.edit {
+            color: #d97706;
+            border-color: #fcd34d;
+            background: #fffbeb;
+        }
+
+        .btn-outline.cancel {
+            color: #ef4444;
+            border-color: #fca5a5;
+            background: #fef2f2;
+        }
+        
+        .btn-outline.delete {
+            color: #ef4444;
+            border-color: #fca5a5;
+            background: #fef2f2;
+        }
+
+        .details-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .banner-img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .title-row h2 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.upcoming { background: #e0f2fe; color: #0284c7; }
+        .badge.category { background: #ffedd5; color: #c2410c; }
+
+        .info-box {
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box.purple {
+            background: rgba(99,102,241,0.1);
+            color: var(--primary-light);
+        }
+
+        .venue-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            color: var(--text-primary);
+        }
+
+        .venue-row i {
+            color: var(--text-muted);
+            font-size: 20px;
+        }
+
+        .details-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-item i {
+            font-size: 20px;
+            color: var(--text-muted);
+            width: 24px;
+        }
+
+        .detail-item .label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .detail-item .value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .side-card .detail-item {
+            padding: 12px 0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="details-header">
+        <div class="header-title">
+            <h1 id="header-name">Event Name</h1>
+            <p><i class="ph ph-music-notes"></i> <span id="header-cat">Category</span> Event</p>
+        </div>
+        <div class="header-actions">
+            <a href="event-dashboard.html" class="btn-outline"><i class="ph ph-arrow-left"></i> Dashboard</a>
+            <button class="btn-outline edit" id="edit-btn"><i class="ph ph-pencil-simple"></i> Edit</button>
+            <button class="btn-outline cancel" id="cancel-btn"><i class="ph ph-prohibit"></i> Cancel Event</button>
+            <button class="btn-outline delete" id="delete-btn"><i class="ph ph-trash"></i> Delete</button>
+        </div>
+    </div>
+
+    <div class="details-container">
+        <img src="" alt="Event Banner" class="banner-img" id="event-img">
+
+        <div class="grid-layout">
+            <!-- LEFT COLUMN -->
+            <div>
+                <div class="card">
+                    <div class="title-row">
+                        <h2 id="main-title">Loading...</h2>
+                        <span class="badge upcoming" id="status-badge">UPCOMING</span>
+                        <span class="badge category" id="category-badge">CATEGORY</span>
+                    </div>
+
+                    <div class="info-box purple" id="dynamic-subtitle">
+                        <i class="ph ph-music-notes"></i>
+                        Loading details...
+                    </div>
+
+                    <div class="venue-row">
+                        <i class="ph ph-map-pin"></i>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-muted);">Venue</div>
+                            <div style="font-weight: 600;" id="venue-name">Loading...</div>
+                        </div>
+                    </div>
+
+                    <div class="details-list">
+                        <div class="detail-item">
+                            <i class="ph ph-calendar-blank"></i>
+                            <div>
+                                <div class="label">Date</div>
+                                <div class="value" id="event-date">...</div>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="ph ph-clock"></i>
+                            <div>
+                                <div class="label">Time</div>
+                                <div class="value" id="event-time">...</div>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="ph ph-currency-inr"></i>
+                            <div>
+                                <div class="label">Base Price</div>
+                                <div class="value" id="event-price">...</div>
+                            </div>
+                        </div>
+                        <div class="detail-item" style="border-bottom: none; padding-bottom: 0;">
+                            <i class="ph ph-ticket"></i>
+                            <div>
+                                <div class="label">Seats (Available / Total)</div>
+                                <div class="value" id="event-seats">...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="section-title"><i class="ph ph-text-align-left"></i> Description</div>
+                    <p style="font-size: 15px; line-height: 1.6; color: var(--text-primary);" id="event-desc">
+                        No description provided.
+                    </p>
+                </div>
+
+                <!-- Associated Venue Card -->
+                <div class="card" id="venue-details-card" style="display: none; background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 24px;">
+                    <div class="section-title" style="color: var(--success);"><i class="ph ph-map-pin"></i> ASSOCIATED VENUE DETAILS</div>
+                    <div class="details-list" style="border-top: none;">
+                        <div class="detail-item" style="border-color: rgba(16,185,129,0.2); padding: 12px 0;">
+                            <div class="label" style="flex: 1; margin: 0; color: var(--text-muted);">Venue Name</div>
+                            <div class="value" style="flex: 2; color: var(--text-primary);" id="full-venue-name">Loading Venue...</div>
+                        </div>
+                        <div class="detail-item" style="border-color: rgba(16,185,129,0.2); padding: 12px 0;">
+                            <div class="label" style="flex: 1; margin: 0; color: var(--text-muted);">Type & Capacity</div>
+                            <div class="value" style="flex: 2; color: var(--text-primary);" id="full-venue-type-capacity">...</div>
+                        </div>
+                        <div class="detail-item" style="border-color: rgba(16,185,129,0.2); padding: 12px 0;">
+                            <div class="label" style="flex: 1; margin: 0; color: var(--text-muted);">City & Location</div>
+                            <div class="value" style="flex: 2; color: var(--text-primary);" id="full-venue-location">...</div>
+                        </div>
+                        <div class="detail-item" style="border-bottom: none; padding-bottom: 0; padding-top: 12px;">
+                            <div class="label" style="flex: 1; margin: 0; color: var(--text-muted);">Facilities</div>
+                            <div class="value" style="flex: 2; font-weight: 500; font-size: 14px; color: var(--text-primary);" id="full-venue-facilities">...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="background: rgba(99,102,241,0.05); border: 1px solid rgba(99,102,241,0.2); border-radius: 8px; padding: 24px;">
+                        <div class="section-title" style="color: var(--primary);"><i class="ph ph-music-notes"></i> CONCERT DETAILS</div>
+                        <div class="details-list" style="border-top: none;">
+                            <div class="detail-item" style="border-color: rgba(99,102,241,0.2); padding: 12px 0;">
+                                <div class="label" style="flex: 1; margin: 0;">Artist Name</div>
+                                <div class="value" style="flex: 2;" id="concert-artist">Pancha & Panchi</div>
+                            </div>
+                            <div class="detail-item" style="border-bottom: none; padding-bottom: 0; padding-top: 12px;">
+                                <div class="label" style="flex: 1; margin: 0;">Music Genre</div>
+                                <div class="value" style="flex: 2;" id="concert-genre">Rock</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div>
+                <div class="card side-card">
+                    <div class="section-title"><i class="ph ph-chart-bar"></i> Event Info</div>
+                    <div class="details-list">
+                        <div class="detail-item">
+                            <i class="ph ph-identification-card"></i>
+                            <div>
+                                <div class="label">Event ID</div>
+                                <div class="value" id="info-id">...</div>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="ph ph-tag"></i>
+                            <div>
+                                <div class="label">Event Type</div>
+                                <div class="value" id="info-type">...</div>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="ph ph-folder"></i>
+                            <div>
+                                <div class="label">Display Category</div>
+                                <div class="value" id="info-category">...</div>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="ph ph-clock"></i>
+                            <div>
+                                <div class="label">Created At</div>
+                                <div class="value" id="info-created">...</div>
+                            </div>
+                        </div>
+                        <div class="detail-item" style="border-bottom: none; padding-bottom: 0;">
+                            <i class="ph ph-arrows-clockwise"></i>
+                            <div>
+                                <div class="label">Last Updated</div>
+                                <div class="value" id="info-updated">...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card side-card">
+                    <div class="section-title"><i class="ph ph-ticket"></i> Seat Availability</div>
+                    <div class="progress-text">
+                        <span id="seat-text">... seats available</span>
+                        <span id="seat-percent" style="color: var(--primary); font-weight: 600;">...</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="seat-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8080/api';
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+
+        async function loadEventDetails() {
+            if (!eventId) {
+                alert('No event ID provided');
+                window.location.href = 'event-dashboard.html';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API}/events/${eventId}`);
+                if (!res.ok) throw new Error('Event not found');
+                const event = await res.json();
+
+                const fallbackImg = 'https://images.unsplash.com/photo-1540039155732-d68876c30e2f?w=1200&q=80';
+                document.getElementById('event-img').src = event.imageUrl || fallbackImg;
+
+                const name = event.title || event.eventName || 'Untitled Event';
+                const cat = event.category || 'Event';
+                
+                document.getElementById('header-name').textContent = name;
+                document.getElementById('header-cat').textContent = cat;
+                document.getElementById('main-title').textContent = name;
+                document.getElementById('category-badge').textContent = cat;
+                
+                document.getElementById('status-badge').textContent = event.status || 'UPCOMING';
+                
+                document.getElementById('dynamic-subtitle').innerHTML = `<i class="ph ph-music-notes"></i> Concert: ${name} | Artist: TBA | Genre: Rock`;
+
+                // Automatically load and display detailed venue details if associated
+                if (event.venueId) {
+                    try {
+                        const venueRes = await fetch(`${API}/events/${eventId}/venue`);
+                        if (venueRes.ok) {
+                            const venue = await venueRes.json();
+                            document.getElementById('venue-name').textContent = venue.venueName;
+                            document.getElementById('full-venue-name').textContent = venue.venueName;
+                            document.getElementById('full-venue-type-capacity').textContent = `${venue.venueType} (${venue.capacity} Seats)`;
+                            document.getElementById('full-venue-location').textContent = `${venue.city} | ${venue.location}`;
+                            document.getElementById('full-venue-facilities').textContent = venue.facilities || 'None listed';
+                            document.getElementById('venue-details-card').style.display = 'block';
+                        } else {
+                            document.getElementById('venue-name').textContent = `Venue #${event.venueId}`;
+                        }
+                    } catch (vErr) {
+                        console.error('Error fetching venue details:', vErr);
+                        document.getElementById('venue-name').textContent = `Venue #${event.venueId}`;
+                    }
+                } else {
+                    document.getElementById('venue-name').textContent = event.location || 'TBA';
+                }
+                
+                const dateObj = new Date(event.eventDate || event.date);
+                document.getElementById('event-date').textContent = isNaN(dateObj.getTime()) ? 'TBA' : dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('event-time').textContent = event.startTime || 'TBA';
+                
+                document.getElementById('event-price').textContent = event.basePrice ? `Rs. ${event.basePrice.toFixed(2)}` : 'Free';
+                
+                const total = event.totalSeats || 500;
+                const avail = event.availableSeats !== undefined ? event.availableSeats : total;
+                document.getElementById('event-seats').textContent = `${avail} / ${total}`;
+                
+                document.getElementById('event-desc').textContent = event.description || 'No description available.';
+                
+                document.getElementById('info-id').textContent = event.id || event.eventId;
+                document.getElementById('info-type').innerHTML = `<i class="ph ph-music-notes"></i> ${cat.toUpperCase()}`;
+                document.getElementById('info-category').textContent = `${cat.toUpperCase()} - Rock`;
+                
+                // Use actual timestamps if available, otherwise mock it visually
+                const createdDate = event.createdAt ? new Date(event.createdAt) : new Date(Date.now() - 86400000);
+                const updatedDate = event.updatedAt ? new Date(event.updatedAt) : new Date();
+                
+                document.getElementById('info-created').textContent = createdDate.toLocaleString();
+                document.getElementById('info-updated').textContent = updatedDate.toLocaleString();
+                
+                document.getElementById('seat-text').textContent = `${avail} of ${total} seats available`;
+                const percent = Math.round((avail / total) * 100);
+                document.getElementById('seat-percent').textContent = `${percent}%`;
+                document.getElementById('seat-fill').style.width = `${percent}%`;
+
+                // Actions
+                document.getElementById('edit-btn').onclick = () => window.location.href = `edit-event.html?id=${eventId}`;
+                document.getElementById('delete-btn').onclick = async () => {
+                    if (confirm('Are you sure you want to delete this event?')) {
+                        await fetch(`${API}/events/${eventId}`, { method: 'DELETE' });
+                        window.location.href = 'event-dashboard.html';
+                    }
+                };
+                
+            } catch (err) {
+                console.error(err);
+                document.getElementById('main-title').textContent = 'Error Loading Event';
+            }
+        }
+
+        loadEventDetails();
+    </script>
+</body>
+</html>

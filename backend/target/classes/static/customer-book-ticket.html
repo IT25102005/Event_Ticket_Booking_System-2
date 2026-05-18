@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Tickets | BookMyShow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #f84464;
+            --bg-nav: #333545;
+            --bg-body: #f5f5f5;
+            --border: #e5e5e5;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--bg-body); color: #333; }
+        
+        .header { background: var(--bg-nav); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .logo { font-size: 22px; font-weight: 700; cursor: pointer; letter-spacing: -0.5px; }
+        .logo span { color: var(--primary); }
+        .close-btn { background: none; border: 1px solid rgba(255,255,255,0.5); color: white; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .close-btn:hover { background: rgba(255,255,255,0.1); }
+
+        .event-header { background: white; padding: 25px 40px; text-align: center; border-bottom: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .event-header h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; color: #000; }
+        .event-header p { color: #666; font-size: 14px; }
+
+        .container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h3 { font-size: 18px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        
+        .ticket-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f0f0f0; }
+        .ticket-info h4 { font-size: 16px; font-weight: 500; color: #333; margin-bottom: 4px; }
+        .ticket-info p { font-size: 13px; color: #888; }
+        .ticket-price { font-size: 16px; font-weight: 700; color: #000; width: 100px; text-align: right; }
+        
+        .qty-controls { display: flex; align-items: center; gap: 15px; width: 120px; justify-content: flex-end; }
+        .qty-btn { width: 30px; height: 30px; border-radius: 4px; border: 1px solid var(--primary); background: white; color: var(--primary); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .qty-btn:hover { background: #fff0f2; }
+        .qty-val { font-size: 16px; font-weight: 500; width: 20px; text-align: center; }
+
+        .footer-action { margin-top: 30px; border-top: 1px solid var(--border); padding-top: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .total-price { font-size: 16px; color: #666; }
+        .total-price strong { font-size: 24px; color: #000; display: block; margin-top: 4px; }
+        .pay-btn { background: var(--primary); color: white; border: none; padding: 14px 40px; border-radius: 6px; font-size: 16px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .pay-btn:hover { background: #e03c5a; }
+        .pay-btn:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="logo" onclick="location.href='index.html'">book<span>my</span>show</div>
+        <button class="close-btn" onclick="history.back()">Close</button>
+    </header>
+
+    <div class="event-header">
+        <h1 id="event-title">Loading Event...</h1>
+        <p id="event-meta">Date & Venue</p>
+    </div>
+
+    <div class="container">
+        <h3>Select Tickets</h3>
+        <div id="tickets-list">
+            <p style="text-align:center; padding: 40px; color:#888;">Loading available tickets...</p>
+        </div>
+        
+        <div class="footer-action">
+            <div class="total-price">Total Amount<br><strong id="total-price">$0.00</strong></div>
+            <button class="pay-btn" id="pay-btn" disabled onclick="processPayment()">Proceed to Pay</button>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8080/api';
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('eventId');
+        let selectedTickets = {};
+        let totalAmount = 0;
+
+        async function init() {
+            if (!eventId) {
+                alert('No event ID provided');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                // Fetch Event Details
+                const evRes = await fetch(`${API}/events/${eventId}`);
+                if (evRes.ok) {
+                    const event = await evRes.json();
+                    document.getElementById('event-title').textContent = event.title || event.eventName || 'Event';
+                    const dateObj = new Date(event.eventDate || event.date);
+                    const dateStr = isNaN(dateObj.getTime()) ? '' : dateObj.toLocaleDateString();
+                    document.getElementById('event-meta').textContent = `${dateStr} • ${event.venueName || (event.venueId ? 'Venue #' + event.venueId : 'TBA')}`;
+                }
+
+                // Fetch Tickets
+                const tktRes = await fetch(`${API}/tickets`);
+                if (tktRes.ok) {
+                    const allTickets = await tktRes.json();
+                    // In a real app we filter by eventId. For demo, we show a few tickets.
+                    let eventTickets = allTickets.filter(t => t.eventId == eventId);
+                    if (eventTickets.length === 0) eventTickets = allTickets.slice(0,3); // fallback
+                    
+                    renderTickets(eventTickets);
+                } else {
+                    throw new Error('Failed to load tickets');
+                }
+            } catch (err) {
+                document.getElementById('tickets-list').innerHTML = '<p style="color:red">Failed to load data from server.</p>';
+            }
+        }
+
+        function renderTickets(tickets) {
+            const list = document.getElementById('tickets-list');
+            if (tickets.length === 0) {
+                list.innerHTML = '<p>No tickets available for this event.</p>';
+                return;
+            }
+
+            list.innerHTML = tickets.map(t => {
+                const price = t.finalPrice || t.basePrice || 0;
+                const id = t.ticketTypeId || t.id;
+                selectedTickets[id] = { price: price, qty: 0, name: t.ticketName };
+                
+                return `
+                    <div class="ticket-row">
+                        <div class="ticket-info">
+                            <h4>${t.ticketName || t.ticketCategory || 'General Admission'}</h4>
+                            <p>${t.ticketCategory || 'Standard'} • Available: ${t.availableQuantity || 'N/A'}</p>
+                        </div>
+                        <div class="ticket-price">$${price.toFixed(2)}</div>
+                        <div class="qty-controls">
+                            <button class="qty-btn" onclick="updateQty(${id}, -1)">-</button>
+                            <span class="qty-val" id="qty-${id}">0</span>
+                            <button class="qty-btn" onclick="updateQty(${id}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.updateQty = function(id, change) {
+            const t = selectedTickets[id];
+            let newQty = t.qty + change;
+            if (newQty < 0) newQty = 0;
+            if (newQty > 10) newQty = 10; // max 10
+            
+            t.qty = newQty;
+            document.getElementById(`qty-${id}`).textContent = newQty;
+            
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            totalAmount = 0;
+            let count = 0;
+            for (let id in selectedTickets) {
+                totalAmount += selectedTickets[id].price * selectedTickets[id].qty;
+                count += selectedTickets[id].qty;
+            }
+            document.getElementById('total-price').textContent = '$' + totalAmount.toFixed(2);
+            document.getElementById('pay-btn').disabled = count === 0;
+            document.getElementById('pay-btn').textContent = `Pay $${totalAmount.toFixed(2)}`;
+        }
+
+        window.processPayment = function() {
+            document.getElementById('pay-btn').textContent = 'Processing...';
+            setTimeout(() => {
+                alert('Payment Successful! Your tickets have been booked.');
+                window.location.href = 'index.html';
+            }, 1500);
+        }
+
+        init();
+    </script>
+</body>
+</html>

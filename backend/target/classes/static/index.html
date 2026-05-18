@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventBook — Discover & Book Events</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/event-management.css">
+    <style>
+        /* Custom Landing Page Styles integrating with event-management.css tokens */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 15, 26, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+            color: white !important;
+            font-weight: 600 !important;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .hero {
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15), transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+
+        .section {
+            padding: 80px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .event-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .event-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: var(--bg-input);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .event-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event-category {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary-light);
+            margin-bottom: 8px;
+        }
+
+        .event-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .event-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .event-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .event-footer {
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-price {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .book-link {
+            color: var(--primary-light);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 40px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 60px;
+        }
+
+        #user-menu {
+            display: none;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #auth-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-logo"><i class="ph ph-ticket"></i> EventBook</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="#upcoming">Events</a>
+
+            <div id="auth-menu">
+                <a href="login.html">Sign In</a>
+                <a href="register.html" class="nav-btn" style="padding: 8px 16px; border-radius: 8px;">Register</a>
+            </div>
+
+            <div id="user-menu">
+                <a href="user-dashboard.html">My Profile</a>
+                <a href="#" id="admin-link"
+                    style="display:none; color: var(--primary-light); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 6px;">Admin
+                    Portal</a>
+                <button onclick="logout()" class="btn btn-outline" style="padding: 6px 12px;">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div>
+            <h1>Experience the Best<br><span>Live Events</span></h1>
+            <p>Discover concerts, sports, theater, and workshops happening near you. Book your tickets instantly with
+                our seamless platform.</p>
+            <div style="display:flex; gap:15px; justify-content:center;">
+                <a href="#upcoming" class="btn btn-primary" style="padding: 14px 30px; font-size: 16px;">Browse
+                    Events</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="section" id="upcoming">
+        <div class="section-header">
+            <h2>Upcoming Events</h2>
+            <div class="filter-group">
+                <select id="category-filter" class="filter-select" onchange="loadEvents()">
+                    <option value="">All Categories</option>
+                    <option value="Concert">Concerts</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Conference">Conferences</option>
+                    <option value="Theater">Theater</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="events-grid" id="events-container">
+            <div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Event Ticket Booking System — SE1020 OOP Group Project</p>
+    </footer>
+
+    <script>
+        const API = 'http://localhost:8080/api';
+
+        // Check Authentication
+        function checkAuth() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    document.getElementById('auth-menu').style.display = 'none';
+                    document.getElementById('user-menu').style.display = 'flex';
+
+                    if (user.role === 'ADMIN') {
+                        document.getElementById('admin-link').style.display = 'block';
+                        document.getElementById('admin-link').href = 'admin-portal.html';
+                    }
+                } catch (e) { }
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.reload();
+        }
+
+        async function loadEvents() {
+            const container = document.getElementById('events-container');
+            const categoryFilter = document.getElementById('category-filter').value;
+
+            try {
+                const res = await fetch(`${API}/events`);
+                if (!res.ok) throw new Error('Failed to load');
+                let events = await res.json();
+
+                // Filter out inactive events
+                events = events.filter(e => e.status !== 'CANCELLED');
+
+                if (categoryFilter) {
+                    events = events.filter(e => e.category === categoryFilter);
+                }
+
+                if (events.length === 0) {
+                    container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">No events found matching your criteria.</p>';
+                    return;
+                }
+
+                // Fallback beautiful images for events without images
+                const fallbackImages = [
+                    'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80',
+                    'https://images.unsplash.com/photo-1540039155732-d68876c30e2f?w=600&q=80',
+                    'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&q=80',
+                    'https://images.unsplash.com/photo-1501281668745-f7f5792203bba?w=600&q=80'
+                ];
+
+                container.innerHTML = events.map((event, i) => {
+                    const img = event.imageUrl || fallbackImages[i % fallbackImages.length];
+                    const dateObj = new Date(event.eventDate || event.date);
+                    const dateStr = isNaN(dateObj.getTime()) ? 'Date TBA' : dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+                    const timeStr = event.startTime ? ` • ${event.startTime}` : '';
+
+                    return `
+                    <a href="customer-event-details.html?id=${event.eventId || event.id}" class="event-card">
+                        <img src="${img}" alt="${event.eventName || event.title}" class="event-img">
+                        <div class="event-content">
+                            <span class="event-category">${event.category || 'Event'}</span>
+                            <h3 class="event-title">${event.eventName || event.title}</h3>
+                            <div class="event-meta">
+                                <span><i class="ph ph-calendar-blank"></i> ${dateStr}${timeStr}</span>
+                                <span><i class="ph ph-map-pin"></i> ${event.venueName || (event.venueId ? 'Venue #' + event.venueId : (event.location || 'Location TBA'))}</span>
+                            </div>
+                            <div class="event-footer">
+                                <span class="event-price">From $${(event.basePrice || 20).toFixed(2)}</span>
+                                <span class="book-link">Book Now →</span>
+                            </div>
+                        </div>
+                    </a>
+                `;
+                }).join('');
+
+            } catch (err) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--danger);">Unable to connect to the server. Please ensure the backend is running.</p>';
+            }
+        }
+
+        checkAuth();
+        loadEvents();
+    </script>
+</body>
+
+</html>

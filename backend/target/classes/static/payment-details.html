@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Details - Event Ticket Booking</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">PaymentHub</div>
+            <ul class="nav-links">
+                <li><a href="admin-portal.html">Home</a></li>
+                <li><a href="payment-dashboard.html">Payments</a></li>
+                <li><a href="refund-dashboard.html">Refunds</a></li>
+                <li><a href="create-payment.html" class="btn-primary-nav">+ New Payment</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="payment-dashboard.html">Payments</a> &gt; <span>Payment Details</span>
+        </div>
+
+        <div class="page-header">
+            <h1>Payment Details</h1>
+        </div>
+
+        <div class="details-container">
+            <div class="details-card">
+                <h2>Payment Information</h2>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>Payment ID:</label>
+                        <p id="detail-payment-id" class="highlight">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Transaction ID:</label>
+                        <p id="detail-transaction-id">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Event ID:</label>
+                        <p id="detail-event-id">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>User ID:</label>
+                        <p id="detail-user-id">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Amount:</label>
+                        <p id="detail-amount" class="highlight">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Currency:</label>
+                        <p id="detail-currency">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Payment Type:</label>
+                        <span class="badge" id="detail-type">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Status:</label>
+                        <span class="badge" id="detail-status">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Description:</label>
+                        <p id="detail-description">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Payment Date:</label>
+                        <p id="detail-payment-date">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Created At:</label>
+                        <p id="detail-created-at">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Updated At:</label>
+                        <p id="detail-updated-at">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="downloadReceipt()">
+                    Download Receipt
+                </button>
+                <button class="btn-secondary" onclick="printDetails()">
+                    Print Details
+                </button>
+                <button class="btn-warning" onclick="initiateRefund()">
+                    Initiate Refund
+                </button>
+                <button class="btn-secondary" onclick="goBack()">
+                    ← Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <!-- Receipt Preview -->
+        <div id="receipt-section" class="receipt-preview">
+            <h2>Receipt Preview</h2>
+            <div id="receipt-content" class="receipt-content">
+                <div class="receipt-header">
+                    <h3>PAYMENT RECEIPT</h3>
+                    <p>EVENT TICKET BOOKING SYSTEM</p>
+                </div>
+                <hr>
+                <div class="receipt-body">
+                    <p><strong>Payment ID:</strong> <span id="receipt-payment-id">-</span></p>
+                    <p><strong>Amount:</strong> <span id="receipt-amount">-</span></p>
+                    <p><strong>Payment Type:</strong> <span id="receipt-type">-</span></p>
+                    <p><strong>Date:</strong> <span id="receipt-date">-</span></p>
+                    <p><strong>Status:</strong> <span id="receipt-status">-</span></p>
+                </div>
+                <hr>
+                <p class="receipt-footer">Thank you for your purchase!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/payment-refund-management.js"></script>
+    <script>
+        // Get payment ID from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (paymentId) {
+                loadPaymentDetails(paymentId);
+            } else {
+                alert('Payment ID not found');
+                window.location.href = 'payment-dashboard.html';
+            }
+        });
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function downloadReceipt() {
+            alert('Receipt download initiated!');
+        }
+
+        function printDetails() {
+            window.print();
+        }
+
+        function initiateRefund() {
+            window.location.href = 'create-refund.html?paymentId=' + paymentId;
+        }
+    </script>
+</body>
+
+</html>

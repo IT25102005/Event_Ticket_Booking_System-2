@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Seat Block — Event Ticket Booking System</title>
+  <link rel="stylesheet" href="css/venue-seat-management.css"/>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2><i class="ph ph-ticket"></i> EventBook</h2><p>Venue &amp; Seat Manager</p></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Navigation</div>
+      <a class="nav-item" href="venue-dashboard.html"><span class="icon"><i class="ph ph-house"></i></span>Dashboard</a>
+      <a class="nav-item" href="add-venue.html"><span class="icon"><i class="ph ph-plus-circle"></i></span>Add Venue</a>
+      <a class="nav-item" href="add-seat.html">Add Seat</a>
+      <a class="nav-item active" href="add-seat-block.html">Add Seat Block</a>
+        <div class="nav-section-label">Navigate</div>
+            <a href="admin-portal.html" class="nav-item">
+                <span class="icon">??</span> Home
+            </a>
+        </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <div class="breadcrumb"><a href="venue-dashboard.html">Dashboard</a> › Add Seat Block</div>
+      <h1>Add Seat Block</h1>
+      <p>Generate multiple seats at once (e.g. Section A, Row B, Seats 1 to 20)</p>
+    </div>
+
+    <form id="add-block-form" novalidate>
+      <div class="card">
+        <div class="card-header"><span class="card-title"> Block Settings</span></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="venueId">Select Venue <span class="required">*</span></label>
+            <select id="venueId">
+              <option value="">— Select Venue —</option>
+            </select>
+            <div class="form-error" id="venueId-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sectionName">Section <span class="required">*</span></label>
+            <input type="text" id="sectionName" placeholder="e.g. Balcony"/>
+            <div class="form-error" id="sectionName-error"></div>
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label" for="rowName">Row <span class="required">*</span></label>
+            <input type="text" id="rowName" placeholder="e.g. A"/>
+            <div class="form-error" id="rowName-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="startingSeatNumber">Starting Seat # <span class="required">*</span></label>
+            <input type="number" id="startingSeatNumber" value="1" min="1"/>
+            <div class="form-error" id="startingSeatNumber-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="numberOfSeats">Total Seats to Generate <span class="required">*</span></label>
+            <input type="number" id="numberOfSeats" placeholder="e.g. 20" min="1" max="200"/>
+            <div class="form-error" id="numberOfSeats-error"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title"> Seat Type</span></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="seatType">Seat Type <span class="required">*</span></label>
+            <select id="seatType">
+              <option value="REGULAR">Regular</option>
+              <option value="VIP">VIP</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card conditional-fields visible" id="regular-fields">
+        <div class="card-header"><span class="card-title">Regular Seat Details</span></div>
+        <div class="form-row">
+          <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px">
+            <div class="checkbox-group">
+              <input type="checkbox" id="standardView" checked/>
+              <label for="standardView">Standard Stage View</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card conditional-fields" id="vip-fields">
+        <div class="card-header"><span class="card-title"> VIP Seat Details</span></div>
+        <div class="form-row">
+          <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px">
+            <div class="checkbox-group">
+              <input type="checkbox" id="loungeAccess"/>
+              <label for="loungeAccess">Lounge Access</label>
+            </div>
+          </div>
+          <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px">
+            <div class="checkbox-group">
+              <input type="checkbox" id="complimentaryDrink"/>
+              <label for="complimentaryDrink">Complimentary Drink</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-bottom:40px">
+        <button type="submit" class="btn btn-primary btn-lg" id="submit-btn"> Generate Seat Block</button>
+        <button type="button" class="btn btn-ghost btn-lg" onclick="window.history.back()">← Cancel</button>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script src="js/venue-seat-management.js"></script>
+<script>
+  document.getElementById('seatType').addEventListener('change', function() {
+    document.getElementById('regular-fields').classList.toggle('visible', this.value === 'REGULAR');
+    document.getElementById('vip-fields').classList.toggle('visible', this.value === 'VIP');
+  });
+
+  async function init() {
+    try {
+      const venues = await apiGetAllVenues();
+      const sel = document.getElementById('venueId');
+      
+      // Fetch events to map venueId -> Event Title
+      let eventsMap = {};
+      try {
+        const eventsRes = await fetch('http://localhost:8080/api/events');
+        if (eventsRes.ok) {
+          const events = await eventsRes.json();
+          events.forEach(e => {
+            if (e.venueId) {
+              eventsMap[e.venueId] = e.title;
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Failed to map events to venues:', err);
+      }
+
+      venues.forEach(v => {
+        const eventInfo = eventsMap[v.venueId] ? ` [Event: ${eventsMap[v.venueId]}]` : '';
+        sel.innerHTML += `<option value="${v.venueId}">${v.venueName}${eventInfo} (Avail Cap: ${v.capacity - (v.totalSeats||0)})</option>`;
+      });
+      const vid = getParam('venueId');
+      if (vid) sel.value = vid;
+    } catch (e) {
+      showToast('Failed to load venues', 'error');
+    }
+  }
+
+  document.getElementById('add-block-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    clearAllErrors('add-block-form');
+    
+    let valid = true;
+    const vId = document.getElementById('venueId').value;
+    if (!vId) { showFieldError('venueId', 'Required'); valid = false; }
+    if (!document.getElementById('sectionName').value.trim()) { showFieldError('sectionName', 'Required'); valid = false; }
+    if (!document.getElementById('rowName').value.trim()) { showFieldError('rowName', 'Required'); valid = false; }
+    
+    const start = parseInt(document.getElementById('startingSeatNumber').value);
+    if (!start || start < 1) { showFieldError('startingSeatNumber', 'Min 1'); valid = false; }
+    const count = parseInt(document.getElementById('numberOfSeats').value);
+    if (!count || count < 1 || count > 200) { showFieldError('numberOfSeats', 'Must be between 1 and 200'); valid = false; }
+
+    if (!valid) return;
+
+    const type = document.getElementById('seatType').value;
+    const payload = {
+      sectionName: document.getElementById('sectionName').value.trim(),
+      rowName: document.getElementById('rowName').value.trim(),
+      startingSeatNumber: start,
+      numberOfSeats: count,
+      seatType: type,
+      seatStatus: 'AVAILABLE'
+    };
+
+    if (type === 'REGULAR') {
+      payload.standardView = document.getElementById('standardView').checked;
+    } else {
+      payload.loungeAccess = document.getElementById('loungeAccess').checked;
+      payload.complimentaryDrink = document.getElementById('complimentaryDrink').checked;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    const orig = btn.innerHTML;
+    setButtonLoading(btn, true, orig);
+    try {
+      const res = await apiAddSeatBlock(vId, payload);
+      showToast(`Block of ${res.length} seats created! <i class="ph ph-check-circle"></i>`, 'success');
+      setTimeout(() => window.location.href = `seat-management.html?venueId=${vId}`, 1500);
+    } catch (err) {
+      getFormErrors(err);
+    } finally {
+      setButtonLoading(btn, false, orig);
+    }
+  });
+
+  init();
+</script>
+</body>
+</html>
+

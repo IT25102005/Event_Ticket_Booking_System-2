@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Venue Details — Event Ticket Booking System</title>
+  <link rel="stylesheet" href="css/venue-seat-management.css" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h2><i class="ph ph-ticket"></i> EventBook</h2>
+        <p>Venue &amp; Seat Manager</p>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Navigation</div>
+        <a class="nav-item" href="venue-dashboard.html"><span class="icon"><i class="ph ph-house"></i></span>Dashboard</a>
+        <a class="nav-item" href="add-venue.html"><span class="icon"><i class="ph ph-plus-circle"></i></span>Add Venue</a>
+        <a class="nav-item" href="add-seat.html">Add Seat</a>
+        <a class="nav-item" href="add-seat-block.html">Add Seat Block</a>
+          <div class="nav-section-label">Navigate</div>
+            <a href="admin-portal.html" class="nav-item">
+                <span class="icon">??</span> Home
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div class="breadcrumb"><a href="venue-dashboard.html">Dashboard</a> › <span id="breadcrumb-name">Venue
+            Details</span></div>
+        <h1 id="page-title">Venue Details</h1>
+      </div>
+      <div id="details-container">
+        <div class="loading-overlay">
+          <div class="loading-spinner" style="width:32px;height:32px;border-width:3px"></div>
+          <p>Loading venue...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/venue-seat-management.js"></script>
+  <script>
+    const venueId = getParam('id');
+    if (!venueId) window.location.href = 'venue-dashboard.html';
+
+    async function loadDetails() {
+      try {
+        const v = await apiGetVenue(venueId);
+        document.getElementById('breadcrumb-name').textContent = v.venueName;
+        document.getElementById('page-title').textContent = v.venueName;
+        renderDetails(v);
+      } catch (e) {
+        document.getElementById('details-container').innerHTML =
+          `<div class="empty-state"><div class="empty-icon"><i class="ph ph-x-circle"></i></div><h3>Venue not found</h3></div>`;
+      }
+    }
+
+    function renderDetails(v) {
+      const indoorExtra = v.venueType === 'INDOOR' ? `
+      <div class="info-item"><div class="info-label">Air Conditioned</div><div class="info-value">${v.airConditioned ? '<i class="ph ph-check-circle"></i> Yes' : '<i class="ph ph-x-circle"></i> No'}</div></div>
+      <div class="info-item"><div class="info-label">Number of Halls</div><div class="info-value">${v.numberOfHalls || 1}</div></div>
+      <div class="info-item"><div class="info-label">Sound System</div><div class="info-value">${v.hasSoundSystem ? '<i class="ph ph-check-circle"></i> Yes' : '<i class="ph ph-x-circle"></i> No'}</div></div>` : '';
+      const outdoorExtra = v.venueType === 'OUTDOOR' ? `
+      <div class="info-item"><div class="info-label">Weather Protected</div><div class="info-value">${v.weatherProtected ? '<i class="ph ph-check-circle"></i> Yes' : ' Open Air'}</div></div>
+      <div class="info-item"><div class="info-label">Ground Area</div><div class="info-value">${v.openGroundArea || 0} sqm</div></div>
+      <div class="info-item"><div class="info-label">Parking</div><div class="info-value">${v.hasParkingArea ? '<i class="ph ph-check-circle"></i> Yes' : '<i class="ph ph-x-circle"></i> No'}</div></div>` : '';
+
+      const banner = v.imageUrl
+        ? `<img src="${v.imageUrl}" alt="${v.venueName}" class="venue-banner" onerror="this.style.display='none'">`
+        : `<div class="venue-banner">${getVenueIcon(v.venueType)}</div>`;
+
+      document.getElementById('details-container').innerHTML = `
+      ${banner}
+
+      <!-- Action Buttons -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
+        <a class="btn btn-ghost" href="venue-dashboard.html">← Back</a>
+        <a class="btn btn-primary" href="edit-venue.html?id=${v.venueId}"><i class="ph ph-pencil-simple"></i> Edit Venue</a>
+        <a class="btn btn-info" href="seat-management.html?venueId=${v.venueId}"> Manage Seats</a>
+        <a class="btn btn-success" href="add-seat-block.html?venueId=${v.venueId}"><i class="ph ph-plus-circle"></i> Add Seat Block</a>
+        ${v.status === 'ACTIVE'
+          ? `<button class="btn btn-warning" onclick="toggleStatus('deactivate')"> Deactivate</button>`
+          : `<button class="btn btn-success" onclick="toggleStatus('activate')"> Activate</button>`}
+        <button class="btn btn-danger" onclick="doDelete()"> Delete Venue</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+        <!-- Left: Info -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Venue Information</span>
+              <div style="display:flex;gap:8px">${venueBadge(v.status)} ${venueTypeBadge(v.venueType)}</div>
+            </div>
+            <div class="venue-info-grid">
+              <div class="info-item"><div class="info-label">Location</div><div class="info-value"><i class="ph ph-map-pin"></i> ${v.location || '—'}</div></div>
+              <div class="info-item"><div class="info-label">City</div><div class="info-value"> ${v.city || '—'}</div></div>
+              <div class="info-item"><div class="info-label">Address</div><div class="info-value">${v.address || '—'}</div></div>
+              <div class="info-item"><div class="info-label">Capacity</div><div class="info-value"><i class="ph ph-users"></i> ${(v.capacity || 0).toLocaleString()} seats</div></div>
+              ${indoorExtra}${outdoorExtra}
+              <div class="info-item"><div class="info-label">Created</div><div class="info-value">${formatDate(v.createdAt)}</div></div>
+              <div class="info-item"><div class="info-label">Updated</div><div class="info-value">${formatDate(v.updatedAt)}</div></div>
+            </div>
+            ${v.venueTypeDescription ? `<p style="margin-top:16px;font-size:0.82rem;color:var(--text-muted)"> ${v.venueTypeDescription}</p>` : ''}
+            ${v.description ? `<hr class="divider"><p style="font-size:0.875rem;color:var(--text-secondary)">${v.description}</p>` : ''}
+            ${v.facilities ? `<hr class="divider"><div><div class="info-label" style="margin-bottom:6px">Facilities</div><p style="font-size:0.875rem;color:var(--text-secondary)">${v.facilities}</p></div>` : ''}
+          </div>
+        </div>
+
+        <!-- Right: Seat Summary -->
+        <div>
+          <div class="card">
+            <div class="card-header"><span class="card-title"> Seat Summary</span></div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              ${seatStat('Total Seats', v.totalSeats, 'var(--text-primary)')}
+              ${seatStat('Available', v.availableSeats, 'var(--success)')}
+              ${seatStat('Booked', v.bookedSeats, 'var(--accent-light)')}
+              ${seatStat('Reserved', v.reservedSeats, 'var(--info)')}
+              ${seatStat(' VIP Seats', v.vipSeats, '#ffca28')}
+              ${seatStat('Regular Seats', v.regularSeats, 'var(--text-secondary)')}
+            </div>
+            <div style="margin-top:16px">
+              <div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden">
+                <div style="height:100%;width:${v.totalSeats > 0 ? Math.round((v.availableSeats / v.totalSeats) * 100) : 0}%;background:var(--success);border-radius:4px;transition:width 0.5s"></div>
+              </div>
+              <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">
+                ${v.totalSeats > 0 ? Math.round((v.availableSeats / v.totalSeats) * 100) : 0}% seats available
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function seatStat(label, value, color) {
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--glass-border)">
+      <span style="font-size:0.85rem;color:var(--text-secondary)">${label}</span>
+      <span style="font-size:1rem;font-weight:700;color:${color}">${value || 0}</span>
+    </div>`;
+    }
+
+    async function toggleStatus(action) {
+      try {
+        if (action === 'deactivate') await apiDeactivateVenue(venueId);
+        else await apiActivateVenue(venueId);
+        showToast(`Venue ${action}d`, 'success');
+        loadDetails();
+      } catch (e) { showToast('Failed to update status', 'error'); }
+    }
+
+    function doDelete() {
+      showConfirm('Delete Venue', 'This will permanently delete the venue and all its seats. Are you sure?', async () => {
+        try {
+          await apiDeleteVenue(venueId);
+          showToast('Venue deleted', 'success');
+          setTimeout(() => window.location.href = 'venue-dashboard.html', 1500);
+        } catch (e) { showToast('Delete failed', 'error'); }
+      });
+    }
+
+    loadDetails();
+  </script>
+</body>
+
+</html>

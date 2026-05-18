@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund Details - Event Ticket Booking</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">PaymentHub</div>
+            <ul class="nav-links">
+                <li><a href="admin-portal.html">Home</a></li>
+                <li><a href="payment-dashboard.html">Payments</a></li>
+                <li><a href="refund-dashboard.html">Refunds</a></li>
+                <li><a href="create-refund.html" class="btn-primary-nav">+ New Refund</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="refund-dashboard.html">Refunds</a> &gt; <span>Refund Details</span>
+        </div>
+
+        <div class="page-header">
+            <h1>Refund Details</h1>
+        </div>
+
+        <div class="details-container">
+            <div class="details-card">
+                <h2>Refund Information</h2>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>Refund ID:</label>
+                        <p id="detail-refund-id" class="highlight">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Payment ID:</label>
+                        <p id="detail-payment-id">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Amount:</label>
+                        <p id="detail-refund-amount" class="highlight">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Refund Type:</label>
+                        <span class="badge" id="detail-refund-type">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Status:</label>
+                        <span class="badge" id="detail-refund-status">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Reason:</label>
+                        <p id="detail-refund-reason">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Approved By:</label>
+                        <p id="detail-approved-by">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Approval Date:</label>
+                        <p id="detail-approval-date">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Refund Date:</label>
+                        <p id="detail-refund-date">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Notes:</label>
+                        <p id="detail-refund-notes">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Created At:</label>
+                        <p id="detail-created-at">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Updated At:</label>
+                        <p id="detail-updated-at">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-primary" id="approve-action-btn" onclick="approveRefundAction()" style="display:none;">
+                    Approve Refund
+                </button>
+                <button class="btn-warning" id="reject-action-btn" onclick="rejectRefundAction()" style="display:none;">
+                    Reject Refund
+                </button>
+                <button class="btn-success" id="complete-action-btn" onclick="completeRefundAction()" style="display:none;">
+                    Mark as Completed
+                </button>
+                <button class="btn-secondary" onclick="goBack()">
+                    ← Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline-section">
+            <h2>Refund Timeline</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>Created</h4>
+                        <p id="timeline-created">-</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>Status Changed</h4>
+                        <p id="timeline-updated">-</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>Approved</h4>
+                        <p id="timeline-approved">-</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker"><i class="ph ph-currency-dollar"></i></div>
+                    <div class="timeline-content">
+                        <h4>Refunded</h4>
+                        <p id="timeline-refund">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/payment-refund-management.js"></script>
+    <script>
+        // Get refund ID from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const refundId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (refundId) {
+                loadRefundDetails(refundId);
+            } else {
+                alert('Refund ID not found');
+                window.location.href = 'refund-dashboard.html';
+            }
+        });
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function approveRefundAction() {
+            if (confirm('Are you sure you want to approve this refund?')) {
+                // Implementation for approve
+                alert('Refund approved successfully!');
+                window.location.href = 'refund-dashboard.html';
+            }
+        }
+
+        function rejectRefundAction() {
+            if (confirm('Are you sure you want to reject this refund?')) {
+                // Implementation for reject
+                alert('Refund rejected successfully!');
+                window.location.href = 'refund-dashboard.html';
+            }
+        }
+
+        function completeRefundAction() {
+            if (confirm('Mark this refund as completed?')) {
+                // Implementation for complete
+                alert('Refund marked as completed!');
+                window.location.href = 'refund-dashboard.html';
+            }
+        }
+    </script>
+</body>
+</html>
+
