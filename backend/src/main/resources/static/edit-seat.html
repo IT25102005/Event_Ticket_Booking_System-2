@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Seat — Event Ticket Booking System</title>
+  <link rel="stylesheet" href="css/venue-seat-management.css"/>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2><i class="ph ph-ticket"></i> EventBook</h2><p>Venue &amp; Seat Manager</p></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Navigation</div>
+      <a class="nav-item" href="venue-dashboard.html"><span class="icon"><i class="ph ph-house"></i></span>Dashboard</a>
+      <a class="nav-item" href="add-venue.html"><span class="icon"><i class="ph ph-plus-circle"></i></span>Add Venue</a>
+      <a class="nav-item" href="add-seat.html">Add Seat</a>
+      <a class="nav-item" href="add-seat-block.html">Add Seat Block</a>
+        <div class="nav-section-label">Navigate</div>
+            <a href="admin-portal.html" class="nav-item">
+                <span class="icon">??</span> Home
+            </a>
+        </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <div class="breadcrumb"><a href="venue-dashboard.html">Dashboard</a> › <a href="#" id="bc-venue">Venue</a> › Edit Seat</div>
+      <h1>Edit Seat</h1>
+      <p id="subtitle">Loading...</p>
+    </div>
+
+    <div id="form-container">
+      <div class="loading-overlay"><div class="loading-spinner" style="width:32px;height:32px;border-width:3px"></div><p>Loading...</p></div>
+    </div>
+  </main>
+</div>
+
+<script src="js/venue-seat-management.js"></script>
+<script>
+  const seatId = getParam('id');
+  if (!seatId) window.location.href = 'venue-dashboard.html';
+  
+  let currentVenueId = null;
+
+  async function loadData() {
+    try {
+      const s = await apiGetSeat(seatId);
+      currentVenueId = s.venueId;
+      document.getElementById('bc-venue').href = `seat-management.html?venueId=${s.venueId}`;
+      document.getElementById('bc-venue').textContent = s.venueName;
+      document.getElementById('subtitle').textContent = `${s.sectionName}-${s.rowName}-${s.seatNumber}`;
+      renderForm(s);
+    } catch(e) {
+      document.getElementById('form-container').innerHTML = 
+        `<div class="empty-state"><div class="empty-icon"><i class="ph ph-x-circle"></i></div><h3>Seat not found</h3></div>`;
+    }
+  }
+
+  function renderForm(s) {
+    document.getElementById('form-container').innerHTML = `
+      <form id="edit-seat-form" novalidate>
+        <div class="card">
+          <div class="card-header"><span class="card-title"> Seat Location</span></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Venue</label>
+              <input type="text" value="${s.venueName}" disabled style="opacity:0.6"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Section <span class="required">*</span></label>
+              <input type="text" id="sectionName" value="${s.sectionName}"/>
+              <div class="form-error" id="sectionName-error"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Row <span class="required">*</span></label>
+              <input type="text" id="rowName" value="${s.rowName}"/>
+              <div class="form-error" id="rowName-error"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Seat Number <span class="required">*</span></label>
+              <input type="text" id="seatNumber" value="${s.seatNumber}"/>
+              <div class="form-error" id="seatNumber-error"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title"> Seat Type &amp; Status</span></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Seat Type <span class="required">*</span></label>
+              <select id="seatType">
+                <option value="REGULAR" ${s.seatType==='REGULAR'?'selected':''}>Regular</option>
+                <option value="VIP" ${s.seatType==='VIP'?'selected':''}>VIP</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select id="seatStatus">
+                <option value="AVAILABLE" ${s.seatStatus==='AVAILABLE'?'selected':''}>AVAILABLE</option>
+                <option value="RESERVED" ${s.seatStatus==='RESERVED'?'selected':''}>RESERVED</option>
+                <option value="BOOKED" ${s.seatStatus==='BOOKED'?'selected':''}>BOOKED</option>
+                <option value="BLOCKED" ${s.seatStatus==='BLOCKED'?'selected':''}>BLOCKED</option>
+                <option value="MAINTENANCE" ${s.seatStatus==='MAINTENANCE'?'selected':''}>MAINTENANCE</option>
+              </select>
+            </div>
+        </div>
+
+        <div class="card conditional-fields ${s.seatType==='REGULAR'?'visible':''}" id="regular-fields">
+          <div class="card-header"><span class="card-title">Regular Seat Details</span></div>
+          <div class="form-row">
+            <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px">
+              <div class="checkbox-group">
+                <input type="checkbox" id="standardView" ${s.standardView?'checked':''}/>
+                <label for="standardView">Standard Stage View</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card conditional-fields ${s.seatType==='VIP'?'visible':''}" id="vip-fields">
+          <div class="card-header"><span class="card-title"> VIP Seat Details</span></div>
+          <div class="form-row">
+            <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px">
+              <div class="checkbox-group">
+                <input type="checkbox" id="loungeAccess" ${s.loungeAccess?'checked':''}/>
+                <label for="loungeAccess">Lounge Access</label>
+              </div>
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px">
+              <div class="checkbox-group">
+                <input type="checkbox" id="complimentaryDrink" ${s.complimentaryDrink?'checked':''}/>
+                <label for="complimentaryDrink">Complimentary Drink</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-bottom:40px">
+          <button type="submit" class="btn btn-primary btn-lg" id="submit-btn"> Save Changes</button>
+          <a class="btn btn-ghost btn-lg" href="seat-management.html?venueId=${s.venueId}">← Cancel</a>
+        </div>
+      </form>`;
+
+    document.getElementById('seatType').addEventListener('change', function() {
+      document.getElementById('regular-fields').classList.toggle('visible', this.value === 'REGULAR');
+      document.getElementById('vip-fields').classList.toggle('visible', this.value === 'VIP');
+    });
+
+    document.getElementById('edit-seat-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearAllErrors('edit-seat-form');
+      
+      let valid = true;
+      if (!document.getElementById('sectionName').value.trim()) { showFieldError('sectionName', 'Required'); valid = false; }
+      if (!document.getElementById('rowName').value.trim()) { showFieldError('rowName', 'Required'); valid = false; }
+      if (!document.getElementById('seatNumber').value.trim()) { showFieldError('seatNumber', 'Required'); valid = false; }
+
+      if (!valid) return;
+
+      const type = document.getElementById('seatType').value;
+      const payload = {
+        sectionName: document.getElementById('sectionName').value.trim(),
+        rowName: document.getElementById('rowName').value.trim(),
+        seatNumber: document.getElementById('seatNumber').value.trim(),
+        seatType: type,
+        seatStatus: document.getElementById('seatStatus').value
+      };
+
+      if (type === 'REGULAR') {
+        payload.standardView = document.getElementById('standardView').checked;
+      } else {
+        payload.loungeAccess = document.getElementById('loungeAccess').checked;
+        payload.complimentaryDrink = document.getElementById('complimentaryDrink').checked;
+      }
+
+      const btn = document.getElementById('submit-btn');
+      const orig = btn.innerHTML;
+      setButtonLoading(btn, true, orig);
+      try {
+        await apiUpdateSeat(seatId, payload);
+        showToast('Seat updated successfully! <i class="ph ph-check-circle"></i>', 'success');
+        setTimeout(() => window.location.href = `seat-management.html?venueId=${currentVenueId}`, 1500);
+      } catch (err) {
+        getFormErrors(err);
+      } finally {
+        setButtonLoading(btn, false, orig);
+      }
+    });
+  }
+
+  loadData();
+</script>
+</body>
+</html>
+

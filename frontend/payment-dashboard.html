@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Dashboard | Event Ticket Booking</title>
+    <link rel="stylesheet" href="css/event-management.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal">
+            <div class="modal-icon" id="confirm-icon"><i class="ph ph-warning"></i></div>
+            <h3 id="confirm-title">Are you sure?</h3>
+            <p id="confirm-message">This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="cancel-btn">Cancel</button>
+                <button class="btn btn-danger" id="confirm-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Update Modal -->
+    <div class="modal-overlay" id="status-modal">
+        <div class="modal">
+            <div class="modal-icon"></div>
+            <h3>Update Payment Status</h3>
+            <p style="margin-bottom:16px">Select the new status for this payment.</p>
+            <select id="new-status" class="filter-select" style="width:100%;margin-bottom:20px">
+                <option value="PENDING">Pending</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="FAILED">Failed</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeStatusModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmStatusUpdate()">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon"><i class="ph ph-credit-card"></i></div>
+                <div>
+                    <h2>PaymentHub</h2>
+                    <span>Payment Management</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <a href="payment-dashboard.html" class="nav-item active">
+                    Dashboard
+                </a>
+                <div class="nav-section-label">Refunds</div>
+                <a href="refund-dashboard.html" class="nav-item">
+                    <span class="icon"><i class="ph ph-arrow-u-up-left"></i></span> Refund Dashboard
+                </a>
+                <a href="create-refund.html" class="nav-item">
+                    <span class="icon"><i class="ph ph-plus-circle"></i></span> New Refund
+                </a>
+                <div class="nav-section-label">Navigate</div>
+                <a href="admin-portal.html" class="nav-item">
+                    <span class="icon"><i class="ph ph-house"></i></span> Home
+                </a>
+                <a href="event-dashboard.html" class="nav-item">
+                    <span class="icon"><i class="ph ph-calendar-star"></i></span> Events
+                </a>
+            </nav>
+            <div class="sidebar-footer">SE1020 OOP Group Project</div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <header class="top-header">
+                <div class="page-title">
+                    <h1>Payment Dashboard</h1>
+                    <p>Manage and track all payment transactions</p>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card" style="--card-color:rgba(16,185,129,0.55)">
+                        <div class="stat-icon" style="background:rgba(16,185,129,0.12);font-size:22px"><i
+                                class="ph ph-check-circle"></i></div>
+                        <div class="stat-info">
+                            <h3 id="completed-count">—</h3>
+                            <p>Completed</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="--card-color:rgba(245,158,11,0.55)">
+
+                        <div class="stat-info">
+                            <h3 id="pending-count">—</h3>
+                            <p>Pending</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="--card-color:rgba(239,68,68,0.55)">
+                        <div class="stat-icon" style="background:rgba(239,68,68,0.12);font-size:22px"><i
+                                class="ph ph-x-circle"></i></div>
+                        <div class="stat-info">
+                            <h3 id="failed-count">—</h3>
+                            <p>Failed</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="--card-color:#6366f1">
+                        <div class="stat-icon" style="background:rgba(99,102,241,0.15);font-size:22px"><i
+                                class="ph ph-currency-dollar"></i></div>
+                        <div class="stat-info">
+                            <h3 id="total-amount">$0.00</h3>
+                            <p>Total Revenue</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+                        <input type="text" id="search-input" placeholder="Search by payment ID or user..."
+                            oninput="applyFilters()">
+                    </div>
+                    <select class="filter-select" id="status-filter" onchange="applyFilters()">
+                        <option value="">All Statuses</option>
+                        <option value="SUCCESS">Success</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="REFUND_PROCESSING">Refund Processing</option>
+                        <option value="PAYMENT_CANCELLED">Cancelled</option>
+                    </select>
+                    <select class="filter-select" id="type-filter" onchange="applyFilters()">
+                        <option value="">All Types</option>
+                        <option value="CARD"><i class="ph ph-credit-card"></i> Card</option>
+                        <option value="BANK_TRANSFER"> Bank Transfer</option>
+                        <option value="WALLET"><i class="ph ph-currency-dollar"></i> Wallet</option>
+                        <option value="CASH"> Cash</option>
+                    </select>
+                    <button class="btn btn-outline" onclick="clearFilters()"><i class="ph ph-x"></i> Clear</button>
+                </div>
+
+                <!-- Table -->
+                <div class="detail-card">
+                    <div style="overflow-x:auto">
+                        <table style="width:100%;border-collapse:collapse;font-size:14px">
+                            <thead>
+                                <tr style="background:rgba(99,102,241,0.1);border-bottom:1px solid var(--border)">
+                                    <th
+                                        style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">
+                                        Payment ID</th>
+                                    <th
+                                        style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">
+                                        User</th>
+                                    <th
+                                        style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">
+                                        Amount</th>
+                                    <th
+                                        style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">
+                                        Type</th>
+                                    <th
+                                        style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">
+                                        Status</th>
+                                    <th
+                                        style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">
+                                        Date</th>
+                                    <th
+                                        style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payments-table-body">
+                                <tr>
+                                    <td colspan="7" style="padding:60px;text-align:center;color:var(--text-muted)">
+                                        <div class="loading-spinner">
+                                            <div class="spinner"></div><span>Loading payments...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-top:16px">
+                    <button class="btn btn-outline" onclick="previousPage()">← Previous</button>
+                    <span id="page-info" style="color:var(--text-secondary);font-size:13px;font-weight:600">Page
+                        1</span>
+                    <button class="btn btn-outline" onclick="nextPage()">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/payment-refund-management.js"></script>
+    <script>
+        let allPayments = [];
+        let currentPage = 1;
+        const pageSize = 10;
+        let selectedPaymentId = null;
+
+        async function loadDashboard() {
+            try {
+                const res = await fetch('http://localhost:8080/api/payments');
+                if (!res.ok) throw new Error('Server error');
+                allPayments = await res.json();
+                updateStats(allPayments);
+                renderTable(allPayments);
+            } catch (err) {
+                document.getElementById('payments-table-body').innerHTML = `
+                <tr><td colspan="7" style="padding:60px;text-align:center;color:var(--danger)">
+                    <i class="ph ph-warning"></i> Could not connect to backend. Make sure Spring Boot is running on port 8080.
+                </td></tr>`;
+            }
+        }
+
+        function updateStats(payments) {
+            document.getElementById('completed-count').textContent = payments.filter(p => p.status === 'SUCCESS' || p.status === 'COMPLETED').length;
+            document.getElementById('pending-count').textContent = payments.filter(p => p.status === 'PENDING').length;
+            document.getElementById('failed-count').textContent = payments.filter(p => p.status === 'PAYMENT_CANCELLED' || p.status === 'REFUND_PROCESSING' || p.status === 'FAILED').length;
+            const total = payments.filter(p => p.status === 'SUCCESS' || p.status === 'COMPLETED').reduce((s, p) => s + (p.amount || 0), 0);
+            document.getElementById('total-amount').textContent = 'Rs. ' + total.toFixed(2);
+        }
+
+        function renderTable(payments) {
+            const tbody = document.getElementById('payments-table-body');
+            const start = (currentPage - 1) * pageSize;
+            const page = payments.slice(start, start + pageSize);
+            document.getElementById('page-info').textContent = `Page ${currentPage} of ${Math.max(1, Math.ceil(payments.length / pageSize))}`;
+
+            if (page.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-muted)">No payments found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = page.map(p => {
+                const statusColors = { SUCCESS: 'rgba(16,185,129,0.15)', COMPLETED: 'rgba(16,185,129,0.15)', PENDING: 'rgba(245,158,11,0.15)', FAILED: 'rgba(239,68,68,0.15)', PAYMENT_CANCELLED: 'rgba(100,116,139,0.15)', REFUND_PROCESSING: 'rgba(245,158,11,0.15)' };
+                const statusText = { SUCCESS: '#10b981', COMPLETED: '#10b981', PENDING: '#f59e0b', FAILED: '#ef4444', PAYMENT_CANCELLED: '#64748b', REFUND_PROCESSING: '#f59e0b' };
+                const sc = statusColors[p.status] || 'rgba(99,102,241,0.15)';
+                const st = statusText[p.status] || '#a5b4fc';
+                const dateStr = p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : (p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—');
+                const displayId = p.paymentId || p.id;
+                const displayName = p.cardholderName || ('User ' + p.userId);
+                const maskedCard = p.maskedCardNumber ? `<br><small style="color:var(--text-muted)">${p.maskedCardNumber}</small>` : '';
+                return `<tr style="border-bottom:1px solid var(--border);transition:background 0.2s" onmouseover="this.style.background='var(--bg-card-hover)'" onmouseout="this.style.background=''">
+                <td style="padding:14px 16px;font-weight:500;color:var(--primary-light)">#${displayId}</td>
+                <td style="padding:14px 16px">${displayName}${maskedCard}</td>
+                <td style="padding:14px 16px;font-weight:600">Rs. ${(p.amount || 0).toFixed(2)}</td>
+                <td style="padding:14px 16px;color:var(--text-secondary)">${p.paymentType || '—'}</td>
+                <td style="padding:14px 16px"><span style="background:${sc};color:${st};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">${p.status}</span></td>
+                <td style="padding:14px 16px;color:var(--text-muted);font-size:13px">${dateStr}</td>
+                <td style="padding:14px 16px">
+                    <div style="display:flex;gap:6px">
+                        <button class="btn btn-sm btn-success" onclick="location.href='payment-details.html?id=${p.id}'">View</button>
+                        <button class="btn btn-sm btn-warning" onclick="cancelPayment(${p.id})">Cancel/Refund</button>
+                    </div>
+                </td>
+            </tr>`;
+            }).join('');
+        }
+
+        function applyFilters() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            const s = document.getElementById('status-filter').value;
+            const t = document.getElementById('type-filter').value;
+            let filtered = allPayments;
+            if (q) filtered = filtered.filter(p => String(p.paymentId || p.id).toLowerCase().includes(q) || String(p.userId).includes(q));
+            if (s) filtered = filtered.filter(p => p.status === s);
+            if (t) filtered = filtered.filter(p => p.paymentType === t);
+            currentPage = 1;
+            renderTable(filtered);
+            updateStats(filtered);
+        }
+
+        function clearFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('type-filter').value = '';
+            currentPage = 1;
+            renderTable(allPayments);
+            updateStats(allPayments);
+        }
+
+        function previousPage() { if (currentPage > 1) { currentPage--; applyFilters(); } }
+        function nextPage() { currentPage++; applyFilters(); }
+
+        function openStatusModal(id) {
+            selectedPaymentId = id;
+            document.getElementById('status-modal').classList.add('active');
+        }
+        function closeStatusModal() { document.getElementById('status-modal').classList.remove('active'); }
+
+        async function confirmStatusUpdate() {
+            const status = document.getElementById('new-status').value;
+            try {
+                const res = await fetch(`http://localhost:8080/api/payments/${selectedPaymentId}/status?status=${status}`, { method: 'PUT' });
+                if (res.ok) { closeStatusModal(); loadDashboard(); }
+                else alert('Failed to update status.');
+            } catch { alert('Cannot connect to server.'); }
+        }
+
+        async function cancelPayment(id) {
+            if (!confirm('Cancel this payment and mark for Refund Processing?')) return;
+            try {
+                // Reusing the DELETE endpoint since we updated it to do soft cancel in backend
+                const res = await fetch(`http://localhost:8080/api/payments/${id}`, { method: 'DELETE' });
+                if (res.ok) loadDashboard();
+                else alert('Failed to cancel payment.');
+            } catch { alert('Cannot connect to server.'); }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+
+</html>

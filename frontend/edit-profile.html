@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - EventBooker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/user-management.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-glow);
+        }
+        .form-container h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+        }
+        .form-group input::placeholder { color: var(--text-muted); }
+        .btn-submit {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.75rem;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+        }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+        .btn-submit:active { transform: scale(0.97); }
+        #messageBox {
+            margin-top: 1rem;
+            font-size: 13px;
+            text-align: center;
+        }
+    </style>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo-container">EventBooker</div>
+        <ul class="nav-links">
+            <li><a href="admin-user-dashboard.html">Dashboard</a></li>
+            <li><a href="profile.html">My Profile</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="form-container">
+            <h2>Edit Profile</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Update your personal details.</p>
+            
+            <form id="editProfileForm">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="phoneNumber">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" id="address">
+                </div>
+                <button type="submit" class="btn-submit">Save Changes</button>
+                <div id="messageBox"></div>
+            </form>
+        </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(userStr);
+            
+            // Pre-fill form
+            document.getElementById('firstName').value = user.firstName;
+            document.getElementById('lastName').value = user.lastName;
+            document.getElementById('phoneNumber').value = user.phoneNumber || '';
+            document.getElementById('address').value = user.address || '';
+
+            document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const messageBox = document.getElementById('messageBox');
+                
+                const payload = {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    phoneNumber: document.getElementById('phoneNumber').value,
+                    address: document.getElementById('address').value
+                };
+
+                try {
+                    const response = await fetch(`http://localhost:8080/api/users/${user.userId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const updatedUser = await response.json();
+                        localStorage.setItem('user', JSON.stringify(updatedUser));
+                        messageBox.innerHTML = '<span style="color: #10b981;">Profile updated successfully!</span>';
+                        setTimeout(() => { window.location.href = 'profile.html'; }, 1500);
+                    } else {
+                        messageBox.innerHTML = '<span style="color: #ef4444;">Failed to update profile.</span>';
+                    }
+                } catch (error) {
+                    messageBox.innerHTML = '<span style="color: #ef4444;">Connection error.</span>';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

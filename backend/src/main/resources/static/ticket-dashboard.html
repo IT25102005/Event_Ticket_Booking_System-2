@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Dashboard | Event Ticket Booking</title>
+    <link rel="stylesheet" href="css/event-management.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+
+<div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon"><i class="ph ph-tag"></i></div>
+            <div>
+                <h2>TicketHub</h2>
+                <span>Ticket & Pricing</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Main</div>
+            <a href="ticket-dashboard.html" class="nav-item active">
+                 Dashboard
+            </a>
+            <a href="add-ticket.html" class="nav-item">
+                <span class="icon"><i class="ph ph-plus-circle"></i></span> Add Ticket Type
+            </a>
+            <a href="price-calculator.html" class="nav-item">
+                <span class="icon"><i class="ph ph-calculator"></i></span> Price Calculator
+            </a>
+            <a href="ticket-availability.html" class="nav-item">
+                <span class="icon"><i class="ph ph-package"></i></span> Availability
+            </a>
+            <div class="nav-section-label">Navigate</div>
+            <a href="admin-portal.html" class="nav-item">
+                <span class="icon"><i class="ph ph-house"></i></span> Home
+            </a>
+            <a href="event-dashboard.html" class="nav-item">
+                <span class="icon"><i class="ph ph-calendar-star"></i></span> Events
+            </a>
+        </nav>
+        <div class="sidebar-footer">SE1020 OOP Group Project</div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-content">
+        <header class="top-header">
+            <div class="page-title">
+                <h1>Ticket Dashboard</h1>
+                <p>Manage ticket types, pricing and availability</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="location.href='add-ticket.html'">
+                    <i class="ph ph-plus-circle"></i> Add Ticket Type
+                </button>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card" style="--card-color:#6366f1">
+                    <div class="stat-icon" style="background:rgba(99,102,241,0.15);font-size:22px"><i class="ph ph-tag"></i></div>
+                    <div class="stat-info"><h3 id="total-types">—</h3><p>Ticket Types</p></div>
+                </div>
+                <div class="stat-card" style="--card-color:rgba(16,185,129,0.55)">
+                    <div class="stat-icon" style="background:rgba(16,185,129,0.12);font-size:22px"><i class="ph ph-check-circle"></i></div>
+                    <div class="stat-info"><h3 id="active-count">—</h3><p>Active</p></div>
+                </div>
+                <div class="stat-card" style="--card-color:rgba(239,68,68,0.55)">
+                    <div class="stat-icon" style="background:rgba(239,68,68,0.12);font-size:22px"><i class="ph ph-prohibit"></i></div>
+                    <div class="stat-info"><h3 id="sold-out-count">—</h3><p>Sold Out</p></div>
+                </div>
+                <div class="stat-card" style="--card-color:rgba(245,158,11,0.55)">
+                    <div class="stat-icon" style="background:rgba(245,158,11,0.12);font-size:22px"><i class="ph ph-currency-dollar"></i></div>
+                    <div class="stat-info"><h3 id="est-revenue">$0</h3><p>Est. Revenue</p></div>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="search-box">
+                    <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+                    <input type="text" id="search-input" placeholder="Search tickets..." oninput="applyFilters()">
+                </div>
+                <select class="filter-select" id="category-filter" onchange="applyFilters()">
+                    <option value="">All Categories</option>
+                    <option value="VIP">VIP</option>
+                    <option value="STANDARD">Standard</option>
+                    <option value="EARLY_BIRD">Early Bird</option>
+                    <option value="STUDENT">Student</option>
+                    <option value="GROUP">Group</option>
+                </select>
+                <select class="filter-select" id="status-filter" onchange="applyFilters()">
+                    <option value="">All Statuses</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="SOLD_OUT">Sold Out</option>
+                </select>
+                <button class="btn btn-outline" onclick="clearFilters()"><i class="ph ph-x"></i> Clear</button>
+            </div>
+
+            <!-- Table -->
+            <div class="detail-card">
+                <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:14px">
+                    <thead>
+                        <tr style="background:rgba(99,102,241,0.1);border-bottom:1px solid var(--border)">
+                            <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">Ticket Name</th>
+                            <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">Event ID</th>
+                            <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">Category</th>
+                            <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">Final Price</th>
+                            <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">Availability</th>
+                            <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">Status</th>
+                            <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticket-table-body">
+                        <tr><td colspan="7" style="padding:60px;text-align:center">
+                            <div class="loading-spinner"><div class="spinner"></div><span>Loading tickets...</span></div>
+                        </td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = 'http://localhost:8080/api';
+    let allTickets = [];
+
+    async function loadDashboard() {
+        try {
+            const res = await fetch(`${API}/tickets`);
+            if (!res.ok) throw new Error();
+            allTickets = await res.json();
+            updateStats(allTickets);
+            renderTable(allTickets);
+        } catch {
+            document.getElementById('ticket-table-body').innerHTML = `
+                <tr><td colspan="7" style="padding:60px;text-align:center;color:var(--danger)">
+                    <i class="ph ph-warning"></i> Could not connect to backend on port 8080.
+                </td></tr>`;
+            document.getElementById('total-types').textContent  = '—';
+            document.getElementById('active-count').textContent = '—';
+            document.getElementById('sold-out-count').textContent = '—';
+        }
+    }
+
+    function updateStats(tickets) {
+        document.getElementById('total-types').textContent    = tickets.length;
+        document.getElementById('active-count').textContent   = tickets.filter(t => t.status === 'ACTIVE').length;
+        document.getElementById('sold-out-count').textContent = tickets.filter(t => t.status === 'SOLD_OUT').length;
+        const rev = tickets.reduce((s, t) => s + (t.finalPrice || t.basePrice || 0) * (t.soldQuantity || 0), 0);
+        document.getElementById('est-revenue').textContent = '$' + rev.toFixed(0);
+    }
+
+    const catColors = { VIP:'rgba(245,158,11,0.15)', STANDARD:'rgba(99,102,241,0.15)', EARLY_BIRD:'rgba(16,185,129,0.15)', STUDENT:'rgba(6,182,212,0.15)', GROUP:'rgba(236,72,153,0.15)' };
+    const catText   = { VIP:'#fbbf24', STANDARD:'#a5b4fc', EARLY_BIRD:'#34d399', STUDENT:'#22d3ee', GROUP:'#f472b6' };
+    const stColors  = { ACTIVE:'rgba(16,185,129,0.15)', INACTIVE:'rgba(100,116,139,0.15)', SOLD_OUT:'rgba(239,68,68,0.15)' };
+    const stText    = { ACTIVE:'#10b981', INACTIVE:'#64748b', SOLD_OUT:'#ef4444' };
+
+    function renderTable(tickets) {
+        const tbody = document.getElementById('ticket-table-body');
+        if (tickets.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-muted)">No tickets found.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = tickets.map(t => `
+            <tr style="border-bottom:1px solid var(--border);transition:background 0.2s" onmouseover="this.style.background='var(--bg-card-hover)'" onmouseout="this.style.background=''">
+                <td style="padding:14px 16px;font-weight:600">${t.ticketName || '—'}</td>
+                <td style="padding:14px 16px;color:var(--text-secondary)">${t.eventId || '—'}</td>
+                <td style="padding:14px 16px"><span style="background:${catColors[t.ticketCategory]||'rgba(99,102,241,0.15)'};color:${catText[t.ticketCategory]||'#a5b4fc'};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">${t.ticketCategory||'—'}</span></td>
+                <td style="padding:14px 16px;font-weight:600;color:var(--primary-light)">$${(t.finalPrice || t.basePrice || 0).toFixed(2)}</td>
+                <td style="padding:14px 16px">
+                    <div style="font-size:12px;color:var(--text-muted)">${t.availableQuantity || 0} / ${t.totalQuantity || 0}</div>
+                    <div style="height:4px;background:var(--border);border-radius:2px;margin-top:4px;width:80px"><div style="height:100%;background:var(--primary);border-radius:2px;width:${t.totalQuantity ? Math.min(100,(t.soldQuantity||0)/t.totalQuantity*100) : 0}%"></div></div>
+                </td>
+                <td style="padding:14px 16px"><span style="background:${stColors[t.status]||'rgba(99,102,241,0.15)'};color:${stText[t.status]||'#a5b4fc'};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">${t.status||'—'}</span></td>
+                <td style="padding:14px 16px">
+                    <div style="display:flex;gap:6px">
+                        <button class="btn btn-sm btn-success" onclick="activateTicket(${t.ticketTypeId})">Activate</button>
+                        <button class="btn btn-sm btn-danger"  onclick="deleteTicket(${t.ticketTypeId})">Delete</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    function applyFilters() {
+        const q = document.getElementById('search-input').value.toLowerCase();
+        const c = document.getElementById('category-filter').value;
+        const s = document.getElementById('status-filter').value;
+        let f = allTickets;
+        if (q) f = f.filter(t => (t.ticketName||'').toLowerCase().includes(q));
+        if (c) f = f.filter(t => t.ticketCategory === c);
+        if (s) f = f.filter(t => t.status === s);
+        renderTable(f); updateStats(f);
+    }
+
+    function clearFilters() {
+        document.getElementById('search-input').value = '';
+        document.getElementById('category-filter').value = '';
+        document.getElementById('status-filter').value = '';
+        renderTable(allTickets); updateStats(allTickets);
+    }
+
+    async function activateTicket(id) {
+        try {
+            const res = await fetch(`${API}/tickets/${id}/activate`, { method: 'PATCH' });
+            if (res.ok) loadDashboard();
+            else alert('Failed to activate ticket.');
+        } catch { alert('Cannot connect to server.'); }
+    }
+
+    async function deleteTicket(id) {
+        if (!confirm('Delete this ticket type permanently?')) return;
+        try {
+            const res = await fetch(`${API}/tickets/${id}`, { method: 'DELETE' });
+            if (res.ok) loadDashboard();
+            else alert('Failed to delete ticket.');
+        } catch { alert('Cannot connect to server.'); }
+    }
+
+    loadDashboard();
+</script>
+</body>
+</html>
+
